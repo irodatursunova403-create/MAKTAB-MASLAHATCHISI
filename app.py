@@ -1,18 +1,3 @@
-# app.py yoki controllers/chat.py fayliga joylang
-
-def get_parent_chat(user, room_id):
-    # 1. Foydalanuvchi tizimga kirganini tekshirish
-    if not user:
-        return "Xatolik: Avval tizimga kiring!"
-        
-    # 2. O'quvchi bu chatga kirmoqchi bo'lsa, qat'iyan rad etish
-    if user.role == 'student':
-        return "Xatolik: Sizda bu suhbatni ko'rish huquqi yo'q!"
-    
-    # 3. Faqat maslahatchi yoki tegishli ota-onaga ma'lumotlarni qaytarish
-    # Bu yerda bazadan faqat shu ota-ona va maslahatchi chati yuklanadi
-    return fetch_messages_from_db(room_id=room_id)
-
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_socketio import SocketIO, send
 
@@ -27,6 +12,15 @@ videolar = [
 ]
 reklamalar = []
 shikoyatlar = []
+chat_xabarlari = [] # Xabarlarni vaqtinchalik saqlash uchun
+
+# Kelgusida foydalanuvchi huquqlarini tekshirish funksiyasi
+def get_parent_chat(user, room_id):
+    if not user:
+        return "Xatolik: Avval tizimga kiring!"
+    if user.role == 'student':
+        return "Xatolik: Sizda bu suhbatni ko'rish huquqi yo'q!"
+    return chat_xabarlari
 
 # --- SAHIFALAR URLLARI ---
 
@@ -44,6 +38,7 @@ def chat():
 @socketio.on('message')
 def handle_message(msg):
     print('Xabar: ' + msg)
+    chat_xabarlari.append(msg)
     send(msg, broadcast=True)
 
 # 3. Reklama sahifasi
